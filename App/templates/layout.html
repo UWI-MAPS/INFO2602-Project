@@ -2,69 +2,286 @@
 <html>
   <head>
   
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
      <!--Import Google Icon Font-->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!-- Compiled and minified CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <!--Let browser know website is optimized for mobile-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>{% block title %}{% endblock %}</title>
-
   </head>
   <body>
     
-      <nav class="purple">
+      <nav>
           <div class="nav-wrapper">
               <a href="#!" class="brand-logo center">{% block page %}{% endblock %}</a>
-              <ul id="nav-mobile" class="left">
-                  <li><a href="/">Home</a></li>
-                  <li><a href="/users">Users Jinja</a></li>
-                  {% if is_authenticated %}
-                    <li><a href="/identify">Identify</a></li>
-                  {% endif %}
-                  <li><a href="/static/users">Users JS</a></li>
-              </ul>
               {% if is_authenticated %}
               <ul id="nav-mobile" class="right">
                 <li><a href="/logout">Logout</a></li>
               </ul>
               {% else %}
               <form class="right navbar-form" method="POST" action="/login" style="display: flex; flex-wrap: nowrap; align-items: center; margin-right: 10px;">
-                  <div class="input-field" style="margin-right: 10px;">
-                      <input placeholder="username" value="bob" name="username" type="text" class="validate" required>
-                      <label for="username">username</label>
-                  </div>
-                  <div class="input-field" style="margin-right: 10px;">
-                      <input placeholder="password"value="bobpass" name="password" type="password" class="validate" required>
-                      <label for="password">Password</label>
-                  </div>
                   <button type="submit" class="btn waves-effect waves-light">Login</button>
               </form>
               {% endif %}
               
           </div>
       </nav>
-      <style>
-          .navbar-form label {
-              color: white !important;
-          }
-      </style>
 
-    <div class="container" id="content">{% block content %}{% endblock %}</div>
+      <!-- Toggle Button -->
+      <a id="toggle-button" class="btn-floating btn-large waves-effect waves-light purple">
+        <i class="material-icons">menu</i>
+      </a>
+
+      <!-- Filter Panel -->
+      <div id="filter-panel">
+        <!-- Close Arrow -->
+        <div style="display: flex; align-items: center; padding: 16px;">
+          <i id="close-arrow" class="material-icons" style="cursor: pointer;">arrow_back</i>
+        </div>
+        <div class="input-field">
+          <i class="material-icons search-icon">search</i>
+          <input type="search" id="search" placeholder="Search...">
+        </div>
+        <ul>
+          <li class="faculty-item">
+            <label>
+              <input type="checkbox" class="filled-in" checked />
+              <span>All</span>
+            </label>
+          </li>
+          <li class="faculty-item">
+            <label>
+              <input type="checkbox" class="filled-in faculty-checkbox" data-target="science-tech" />
+              <span>Faculty: Science & Tech</span>
+            </label>
+          </li>
+          <div id="science-tech" class="nested-rooms">
+            <ul>
+              <li><i class="material-icons" style="color: #ca1212;">place</i> DCIT Office</li>
+              <li><i class="material-icons" style="color: #3f75da;">place</i> CL2</li>
+              <li><i class="material-icons" style="color: #4caf50;">place</i> FST 113</li>
+              <li><i class="material-icons" style="color: #4caf50;">place</i> FST 114</li>
+              <li><i class="material-icons" style="color: #4caf50;">place</i> FST 214</li>
+              <li><i class="material-icons" style="color: #4caf50;">place</i> FST 214</li>
+            </ul>
+          </div>
+          <li class="faculty-item">
+            <label>
+              <input type="checkbox" class="filled-in" />
+              <span>Faculty: Engineering</span>
+            </label>
+          </li>
+          <li class="faculty-item">
+            <label>
+              <input type="checkbox" class="filled-in" />
+              <span>Faculty: Social Sciences</span>
+            </label>
+          </li>
+          <li class="faculty-item">
+            <label>
+              <input type="checkbox" class="filled-in" />
+              <span>Faculty: Law</span>
+            </label>
+          </li>
+          <li class="faculty-item">
+            <label>
+              <input type="checkbox" class="filled-in" />
+              <span>Faculty: Humanities & Education</span>
+            </label>
+          </li>
+        </ul>
+        <a href="#contact" class="btn purple">Contact Us</a>
+      </div>
+
+      <!-- Bottom-right button -->
+      <a id="create-marker-button" class="btn-floating btn-large waves-effect waves-light blue">
+        <i class="material-icons">add</i>
+      </a>
+
+      <!-- Create Marker Sidebar -->
+      <div id="create-marker-sidebar">
+        <div class="sidebar-header">
+          <i id="close-create-marker" class="material-icons">arrow_forward</i>
+          <h5>Create Marker</h5>
+        </div>
+        <form id="create-marker-form">
+          <div class="form-container">
+            <!-- Name Field -->
+            <div class="input-field">
+              <input type="text" id="marker-name" required>
+              <label for="marker-name">Name</label>
+            </div>
+
+            <!-- Latitude and Longitude Fields -->
+            <div class="row">
+              <div class="input-field col s6">
+                <input type="text" id="marker-latitude" required>
+                <label for="marker-latitude">Latitude</label>
+              </div>
+              <div class="input-field col s6">
+                <input type="text" id="marker-longitude" required>
+                <label for="marker-longitude">Longitude</label>
+              </div>
+            </div>
+
+            <!-- Type Field -->
+            <div class="row">
+              <div class="input-field col s6">
+                <select id="marker-building" required>
+                  <option value="" disabled selected>Select type</option>
+                  <option value="building">Building</option>
+                  <option value="open-space">Open Space</option>
+                  <option value="greens">Greens</option>
+                  <option value="sport-facility">Sport Facility</option>
+                  <option value="car-park">Car Park</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Faculty and # Floors Fields -->
+            <div class="row">
+              <div class="input-field col s6">
+                <select id="marker-faculty" required>
+                  <option value="" disabled selected>Faculty</option>
+                  <option value="science-tech">Science & Tech</option>
+                  <option value="engineering">Engineering</option>
+                  <option value="social-sciences">Social Sciences</option>
+                  <option value="law">Law</option>
+                  <option value="humanities">Humanities & Education</option>
+                </select>
+
+              </div>
+              <div class="input-field col s6">
+                <select id="marker-floors" required>
+                  <option value="" disabled selected># of Floors</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Description Field -->
+            <div class="input-field">
+              <textarea id="marker-description" class="materialize-textarea" placeholder="Enter description"></textarea>
+            </div>
+
+            <!-- Add Room Button -->
+            <div class="button-container">
+              <button type="button" id="add-rooms-button" class="btn blue">Add Room</button>
+            </div>
+
+            <!-- Scrollable Room List -->
+            <div id="room-list-container">
+              <div class="room-item">
+                <span>Room 1</span>
+                <button class="btn-small blue edit-room">Edit</button>
+                <button class="btn-small red delete-room">Delete</button>
+              </div>
+              <div class="room-item">
+                <span>Room 1</span>
+                <button class="btn-small blue edit-room">Edit</button>
+                <button class="btn-small red delete-room">Delete</button>
+              </div>
+              <div class="room-item">
+                <span>Room 1</span>
+                <button class="btn-small blue edit-room">Edit</button>
+                <button class="btn-small red delete-room">Delete</button>
+              </div>
+              <div class="room-item">
+                <span>Room 1</span>
+                <button class="btn-small blue edit-room">Edit</button>
+                <button class="btn-small red delete-room">Delete</button>
+              </div>
+              <!-- More rooms will be dynamically added here -->
+            </div>
+
+            <!-- Image Upload -->
+            <div id="marker-upload-area" class="upload-border">
+              <p class="upload-text">Drag and drop or click here to upload image</p>
+              <p class="upload-text-secondary">Upload any images from desktop</p>
+              <input type="file" id="marker-image-input" accept="image/*" class="hidden">
+            </div>
+
+            <div id="marker-image-preview">
+              <img id="marker-preview" src="#" alt="Uploaded Image">
+              <button id="marker-remove-image" type="button">Remove Image</button>
+            </div>
+
+            <!-- Marker Preview -->
+            <div id="marker-preview-map"></div>
+          </div>
+          <button type="submit" class="btn blue">Create Marker</button>
+        </form>
+      </div>
+
+      <!-- Room Sidebar -->
+      <div id="room-sidebar">
+        <div class="sidebar-header">
+          <i id="close-room-sidebar" class="material-icons">arrow_forward</i>
+          <h5>Add Room</h5>
+        </div>
+        <form id="room-form">
+          <div class="form-container">
+            
+            <!-- Name Field -->
+            <div class="input-field">
+              <input type="text" id="room-name" required>
+              <label for="room-name">Name</label>
+            </div>
+
+            <!-- Latitude and Longitude Fields -->
+            <div class="row">
+              <div class="input-field col s6">
+                <input type="text" id="room-latitude" required>
+                <label for="room-latitude">Latitude</label>
+              </div>
+              <div class="input-field col s6">
+                <input type="text" id="room-longitude" required>
+                <label for="room-longitude">Longitude</label>
+              </div>
+            </div>
+
+            <!-- Type Field -->
+            <div class="row">
+              <div class="input-field col s6">
+                <select id="room-type" required>
+                  <option value="" disabled selected>Select type</option>
+                  <option value="classroom">Classroom</option>
+                  <option value="lab">Lab</option>
+                  <option value="office">Office</option>
+                  <option value="auditorium">Auditorium</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Image Upload -->
+            <div id="room-upload-area" class="upload-border">
+              <p class="upload-text">Drag and drop or click here to upload image</p>
+              <p class="upload-text-secondary">Upload any images from desktop</p>
+              <input type="file" id="room-image-input" accept="image/*" class="hidden">
+            </div>
+
+            <div id="room-image-preview">
+              <img id="room-preview" src="#" alt="Uploaded Image">
+              <button id="room-remove-image" type="button">Remove Image</button>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn blue">Add Room</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Map -->
+      <div id="map"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script>
-       M.AutoInit();
-
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-              {% for message in messages %}
-              M.toast({html: '{{message}}'})
-              {% endfor %}
-          {% endif %}
-        {% endwith %}
-       
-    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=8JZ7i18MjFuM35dJHq70n3Hx4"></script>
+    
   </body>
 </html>
