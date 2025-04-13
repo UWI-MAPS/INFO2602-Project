@@ -1,3 +1,647 @@
 html {
     padding: 0;
 }
+
+#map {
+  height: 89vh;
+  width: 100%;
+}
+
+/* Filter Panel */
+#filter-panel {
+  position: absolute;
+  left: 0;
+  width: 300px;
+  height: 89.2vh;
+  background: rgb(175, 212, 255);
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+  overflow: hidden; 
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  color: #211c1c;
+}
+
+#filter-panel.open {
+  transform: translateX(0);
+}
+
+/* Filter Options Container */
+#filter-panel ul {
+  max-height: 60vh;
+  overflow-y: auto; 
+  padding: 0; 
+  margin: 0; 
+  list-style: none; 
+}
+
+/* Contact Us Button (Static) */
+#filter-panel a.btn {
+  position: absolute; 
+  bottom: 20px; 
+  right: 20px; 
+  background-color: #27368f !important;
+  color: white !important;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+#filter-panel a.btn:hover {
+  background-color: #1d31a0 !important;
+}
+
+#toggle-button {
+  position: absolute;
+  top: 70px;
+  left: 10px;
+  z-index: 1100;
+  background-color: #2d3599 !important; 
+  color: white !important; 
+}
+
+#toggle-button:hover {
+  background-color: #1d31a0 !important; 
+}
+
+.navbar-form label {
+  color: white !important;
+}
+
+.nested {
+  margin-left: 20px;
+  display: none;
+}
+
+.nested.open {
+  display: block;
+}
+
+/* Style for the search bar */
+.input-field {
+  margin: 10px auto;
+  padding: 3px 8px; 
+  background: white;
+  border-radius: 20px; 
+  box-shadow: 1px 1px 10px 3px #77a5fa; 
+  width: 90%; 
+  display: flex;
+  align-items: center;
+}
+
+/* Style for the search input */
+.input-field input {
+  border: none;
+  outline: none;
+  width: 98%;
+  font-size: 12px; 
+  padding: 2px; 
+}
+
+.input-field input::placeholder {
+  color: #9e9e9e; 
+  font-style: italic; 
+}
+
+/* Style for the search icon */
+.input-field .search-icon {
+  position: absolute;
+  right: 10px; 
+  font-size: 18px; 
+  color: #211c1c; 
+}
+
+.faculty-item {
+  margin: 10px auto;
+  padding: 10px;
+  background: white;
+  border-radius: 5px;
+  box-shadow: 1px 1px 5px 1px #77a5fa inset;
+  display: flex;
+  align-items: center;
+  width: 90%; 
+}
+
+.faculty-item label {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.faculty-item span {
+  margin-left: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  display: block; 
+  max-width: 85%; 
+  color: #211c1c; 
+}
+
+
+.nested-rooms {
+  display: none;
+  margin-top: 10px;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 5px;
+  box-shadow: -4px 1px 9px 1px #77a5fa inset;
+  max-height: 150px; 
+  overflow-y: auto; 
+  width: 90%; 
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.nested-rooms ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nested-rooms ul li {
+  display: flex;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 14px;
+  color: #211c1c; 
+}
+
+.nested-rooms ul li i {
+  margin-right: 8px; 
+  font-size: 18px;
+}
+
+/* Style for the close arrow */
+#close-arrow {
+  position: absolute;
+  top: 10px;
+  right: 10px; 
+  cursor: pointer;
+  font-size: 24px; 
+  color: #211c1c; 
+}
+
+/* Change the navbar color to light blue */
+nav {
+  background-color: #1d31a0 !important;
+}
+
+/* Bottom-right button */
+#create-marker-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1100;
+  background-color: #1a50b4 !important;
+  color: white !important;
+}
+
+#create-marker-button:hover {
+  background-color: #143d88 !important;
+}
+
+/* Create Marker Sidebar */
+#create-marker-sidebar {
+  position: fixed;
+  right: -400px; 
+  width: 400px; 
+  height: 90vh; 
+  background: rgb(175, 212, 255); 
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2); 
+  z-index: 1200;
+  transition: right 0.3s ease-in-out;
+  overflow-y: auto; 
+  border-top-left-radius: 20px; 
+  border-bottom-left-radius: 20px; 
+}
+
+#create-marker-sidebar.open {
+  right: 0; 
+}
+
+/* Sidebar header styling */
+.sidebar-header {
+  position: sticky; 
+  top: 0;
+  display: flex;
+  align-items: center; 
+  justify-content: center; 
+  background: rgb(175, 212, 255); 
+  padding: 16px 0; 
+  z-index: 10; 
+  border-top-left-radius: 20px; 
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); 
+  text-align: center; 
+  width: 100%; 
+}
+
+/* Sidebar header arrow styling */
+.sidebar-header i {
+  position: absolute; 
+  left: 16px; 
+  font-size: 24px;
+  cursor: pointer;
+  color: #211c1c; 
+}
+
+/* Sidebar header text styling */
+.sidebar-header h5 {
+  margin: 0;
+  font-size: 24px; 
+  font-weight: bold; 
+  color: #181d2b; 
+}
+
+/* Form container */
+.form-container {
+  display: flex;
+  flex-direction: column; 
+  gap: 5px; 
+  padding: 0 20px; 
+}
+
+/* Row for side-by-side fields */
+.row {
+  display: flex;
+  gap: 10px; 
+  margin-bottom: 0px;
+}
+
+/* Half-width fields */
+.row .input-field {
+  flex: 1;
+}
+
+/* Left column */
+.form-left {
+  flex: 1; 
+}
+
+/* Right column */
+.form-right {
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Input fields */
+.input-field {
+  margin-bottom: 10px; 
+}
+
+.input-field input,
+.input-field select,
+.input-field textarea {
+  background: white;
+  border-radius: 5px;
+  padding: 8px; 
+  border: none;
+  box-shadow: none !important; 
+  border: none !important; 
+  background: transparent !important; 
+  color: #211c1c;
+  font-size: 14px;
+  width: calc(100% - 20px); 
+  height: 36px; 
+}
+
+/* Ensure Materialize underline is visible */
+.input-field input:focus,
+.input-field select:focus,
+.input-field textarea:focus {
+  border-bottom: 1px solid #42a5f5 !important; 
+  box-shadow: none !important; 
+}
+
+/* Dropdown Styling */
+.input-field select {
+  background: white;
+  border-radius: 5px;
+  padding: 8px;
+  border: none;
+  box-shadow: 1px 1px 5px 1px #77a5fa inset;
+  color: #211c1c;
+  font-size: 14px;
+  width: 100%;
+  height: 36px;
+}
+
+/* Fix Description Box */
+.input-field textarea {
+  height: 100px; 
+  padding: 8px; 
+  border-radius: 5px;
+  border: none;
+  box-shadow: none; 
+  resize: none; 
+  font-size: 14px;
+  color: #211c1c;
+  background: white; 
+}
+
+/* Required field indicator */
+.required-dot {
+  display: none; 
+}
+
+/* Description textarea */
+.input-field textarea {
+  height: 80px; 
+  resize: none; 
+}
+
+/* Image preview box */
+.image-preview {
+  width: calc(100% - 20px); 
+  height: 150px;
+  border: 2px dashed #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  font-size: 16px;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+
+/* Submit button */
+button[type="submit"] {
+  display: block; 
+  margin: 20px auto; 
+  width: 90%; 
+  background-color: #27368f !important;
+  color: white !important;
+  border-radius: 5px;
+  padding: 0px; 
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-sizing: border-box;
+  border: none; 
+  cursor: pointer;
+}
+
+/* Submit button hover effect */
+button[type="submit"]:hover {
+  background-color: #1d31a0 !important; 
+}
+
+/* Fix Login Button */
+nav .navbar-form button {
+  width: 12vh;
+  background-color: #27368f !important; 
+  color: white !important;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+}
+
+nav .navbar-form button:hover {
+  background-color: #1d31a0 !important; 
+}
+
+/* Room Sidebar */
+#room-sidebar {
+  position: fixed;
+  right: -400px; 
+  width: 400px; 
+  height: 90vh;
+  background: rgb(175, 212, 255); 
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+  z-index: 1200;
+  transition: right 0.3s ease-in-out;
+  overflow-y: auto;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+}
+
+#room-sidebar.open {
+  right: 0; 
+}
+
+/* Sidebar Header */
+#room-sidebar .sidebar-header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(175, 212, 255);
+  padding: 16px 0;
+  border-top-left-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+#room-sidebar .sidebar-header i {
+  position: absolute;
+  left: 16px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #211c1c;
+}
+
+#room-sidebar .sidebar-header h5 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
+  color: #181d2b;
+}
+
+/* Form Container */
+#room-sidebar .form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 20px;
+}
+
+/* Input Fields */
+#room-sidebar .input-field input,
+#room-sidebar .input-field select,
+#room-sidebar .input-field textarea {
+  background: white;
+  border-radius: 5px;
+  padding: 8px;
+  border: none;
+  box-shadow: 1px 1px 5px 1px #77a5fa inset;
+  color: #211c1c;
+  font-size: 14px;
+  width: calc(100% - 20px);
+  height: 36px;
+}
+
+/* Scrollable Room List */
+#room-list-container {
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  margin-top: 20px;
+  background: #f9f9f9;
+}
+
+/* Room Item */
+.room-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.room-item:last-child {
+  border-bottom: none;
+}
+
+.room-item span {
+  flex: 1;
+  color: #333;
+}
+
+.room-item .btn-small {
+  margin-left: 5px;
+  font-size: 12px;
+  padding: 5px 10px;
+}
+
+/* Map Preview Container */
+#marker-preview-map {
+  width: 100%;
+  height: 200px; 
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+
+/* Add Room Button */
+#add-rooms-button {
+  width: 100%;
+  background-color: #27368f !important; 
+  color: white !important;
+  border-radius: 5px;
+  margin-top: 15px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-sizing: border-box;
+  cursor: pointer;
+  border: none; 
+  box-shadow: none; 
+}
+
+#add-rooms-button:hover {
+  background-color: #1d31a0 !important; 
+}
+
+/* Remove the white bubble effect */
+#add-rooms-button:focus {
+  outline: none; 
+  box-shadow: none; 
+}
+
+/* Button Container */
+.button-container {
+  text-align: center; 
+  width: 50%;
+}
+
+/* Hide the default file input */
+.hidden {
+  display: none;
+}
+
+/* Image Uploader Styles */
+.upload-border {
+  border: 2px dashed #e0e0e0;
+  border-radius: 10px;
+  margin-top: 20px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+  background-color: #f7fafc;
+}
+
+.upload-border:hover,
+.upload-border.dragover {
+  border-color: #90caf9;
+  background-color: #f0f4f8;
+}
+
+.upload-icon {
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1rem;
+  color: #90caf9;
+}
+
+.upload-text {
+  font-size: 1rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.upload-text-secondary {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+#marker-image-preview,
+#room-image-preview {
+  display: none;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+#marker-image-preview img,
+#room-image-preview img {
+  max-width: 100%;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+#marker-remove-image,
+#room-remove-image {
+  display: none;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #f87171;
+  color: white;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 0.875rem;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#marker-remove-image:hover,
+#room-remove-image:hover {
+  background-color: #ef4444;
+}
+
+#marker-remove-image:focus,
+#room-remove-image:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.5);
+}
+
+
