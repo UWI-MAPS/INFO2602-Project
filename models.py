@@ -71,8 +71,8 @@ class Room(db.Model):
     type = db.Column(db.String(50))
     image = db.Column(db.String(255))
 
-    building = db.relationship('BuildingDetails', backref='admin_rooms')
-    admin = db.relationship('Admin', backref='rooms')
+    building = db.relationship('BuildingDetails', backref='rooms')
+    admin = db.relationship('Admin', backref='admin_rooms')
 
     def __init__(self, building_id, admin_id, floor, name, latitude, longitude, type=None, image=None):
         self.building_id = building_id
