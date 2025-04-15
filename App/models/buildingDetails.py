@@ -9,3 +9,9 @@ class BuildingDetails(db.Model):
     faculty = db.Column(db.String(100))
 
     location = db.relationship('Location', backref='building_details')
+
+def __init__(self, location_id, num_floors, faculty):
+        self.location_id = location_id
+        self.num_floors = num_floors
+        self.faculty = faculty
+
