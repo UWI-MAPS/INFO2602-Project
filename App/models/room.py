@@ -16,8 +16,13 @@ class Room(db.Model):
     building = db.relationship('BuildingDetails', backref='rooms')
     admin = db.relationship('Admin', backref='admin_rooms')
 
-def __init__(self, location_id, num_floors, faculty):
-        self.location_id = location_id
-        self.num_floors = num_floors
-        self.faculty = faculty
+def __init__(self, building_id, admin_id, floor, name, latitude, longitude, type=None, image=None):
+        self.building_id = building_id
+        self.admin_id = admin_id
+        self.floor = floor
+        self.name = name
+        self.latitude = latitude
+        self.longitude = longitude
+        self.type = type
+        self.image = image
 
