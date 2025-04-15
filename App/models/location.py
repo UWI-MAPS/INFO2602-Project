@@ -13,3 +13,12 @@ class Location(db.Model):
     description = db.Column(db.Text)
 
     admin = db.relationship('Admin', backref='locations')
+
+def __init__(self, admin_id, name, latitude, longitude, type=None, image=None, description=None):
+        self.admin_id = admin_id
+        self.name = name
+        self.latitude = latitude
+        self.longitude = longitude
+        self.type = type
+        self.image = image
+        self.description = description
