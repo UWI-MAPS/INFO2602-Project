@@ -14,11 +14,23 @@ class Location(db.Model):
 
     admin = db.relationship('Admin', backref='locations')
 
-def __init__(self, admin_id, name, latitude, longitude, type=None, image=None, description=None):
-        self.admin_id = admin_id
-        self.name = name
-        self.latitude = latitude
-        self.longitude = longitude
-        self.type = type
-        self.image = image
-        self.description = description
+    def __init__(self, admin_id, name, latitude, longitude, type=None, image=None, description=None):
+            self.admin_id = admin_id
+            self.name = name
+            self.latitude = latitude
+            self.longitude = longitude
+            self.type = type
+            self.image = image
+            self.description = description
+
+    def toJSON(self):
+        return{
+            'id': self.id,
+            'admin_id': self.admin_id,
+            'name': self.name,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'type': self.type,
+            'image':self.image,
+            'description': self.description
+        }

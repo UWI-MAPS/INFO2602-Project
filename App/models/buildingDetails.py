@@ -10,8 +10,16 @@ class BuildingDetails(db.Model):
 
     location = db.relationship('Location', backref='building_details')
 
-def __init__(self, location_id, num_floors, faculty):
-        self.location_id = location_id
-        self.num_floors = num_floors
-        self.faculty = faculty
+    def __init__(self, location_id, num_floors, faculty):
+            self.location_id = location_id
+            self.num_floors = num_floors
+            self.faculty = faculty
 
+    def toJSON(self):
+        return{
+            'id': self.id,
+            'location_id': self.location_id,
+            'name': self.location.name,
+            'faculty': self.faculty,
+            'number of floors': self.num_floors
+        }

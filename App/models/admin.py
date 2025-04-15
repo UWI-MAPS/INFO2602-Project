@@ -17,3 +17,9 @@ class Admin(db.Model):
     def __init__(self, username, password):
         self.username = username
         self.set_password(password)
+
+    def toJSON(self):
+        return{
+            'id': self.id,
+            'username': self.username
+        }
