@@ -10,3 +10,12 @@ def updateBuildingDetails(building_details_id, num_floors, faculty):
         db.session.commit()
         return True
     return False
+
+def deleteBuildingDetails(building_details_id):
+    building = BuildingDetails.query.filter_by(id=building_details_id).first()
+
+    if building:
+        db.session.delete(building)
+        db.session.commit()
+        return True
+    return False
