@@ -2,7 +2,7 @@ from flask_admin.contrib.sqla import ModelView
 from flask_jwt_extended import jwt_required, current_user, unset_jwt_cookies, set_access_cookies
 from flask_admin import Admin
 from flask import render_template, flash, redirect, request, url_for  
-#from App.models import db, User, Location, BuildingDetails, Room  
+from App.models import db, User 
 class AdminView(ModelView):
 
     @jwt_required()
