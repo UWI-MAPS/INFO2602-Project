@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+{% block title %}Manage Rooms{% endblock %}
+{% block page %}Admin: Rooms{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h3>All Rooms</h3>
+  <a href="/admin/room/new" class="btn">Add New Room</a>
+  <table class="striped">
+    <thead>
+      <tr><th>Name</th><th>Floor</th><th>Type</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for room in rooms %}
+      <tr>
+        <td>{{ room.name }}</td>
+        <td>{{ room.floor }}</td>
+        <td>{{ room.type }}</td>
+        <td><a href="/admin/room/edit/{{ room.id }}">Edit</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

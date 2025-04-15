@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+{% block title %}Manage Locations{% endblock %}
+{% block page %}Admin: Locations{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h3>All Locations</h3>
+  <a href="/admin/location/new" class="btn">Add New Location</a>
+  <table class="striped">
+    <thead>
+      <tr><th>Name</th><th>Type</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for loc in locations %}
+      <tr>
+        <td>{{ loc.name }}</td>
+        <td>{{ loc.type }}</td>
+        <td><a href="/admin/location/edit/{{ loc.id }}">Edit</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

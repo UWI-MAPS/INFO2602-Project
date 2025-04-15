@@ -1,7 +1,6 @@
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from App.database import db
 
-db = SQLAlchemy()
 
 class Admin(db.Model):
     __tablename__ = 'admin'
@@ -19,8 +18,6 @@ class Admin(db.Model):
         self.username = username
         self.set_password(password)
 
-    def __repr__(self):
-        return f'<Admin {self.username}>'
     
 
 
@@ -47,8 +44,6 @@ class Location(db.Model):
         self.image = image
         self.description = description
 
-    def __repr__(self):
-        return f'<Location {self.name}>'
 
 class BuildingDetails(db.Model):
     __tablename__ = 'buildingdetails'
@@ -63,9 +58,7 @@ class BuildingDetails(db.Model):
         self.location_id = location_id
         self.num_floors = num_floors
         self.faculty = faculty
-
-    def __repr__(self):
-        return f'<BuildingDetails {self.name}>'    
+   
 
 
 class Room(db.Model):
@@ -81,7 +74,7 @@ class Room(db.Model):
     image = db.Column(db.String(255))
 
     building = db.relationship('BuildingDetails', backref='rooms')
-    admin = db.relationship('Admin', backref='rooms')
+    admin = db.relationship('Admin', backref='admin_rooms')
 
     def __init__(self, building_id, admin_id, floor, name, latitude, longitude, type=None, image=None):
         self.building_id = building_id
@@ -93,5 +86,3 @@ class Room(db.Model):
         self.type = type
         self.image = image
 
-    def __repr__(self):
-        return f'<Room {self.name}> - Floor {self.floor}>'
