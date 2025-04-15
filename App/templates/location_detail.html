@@ -1,0 +1,13 @@
+{% extends 'layout.html' %}
+{% block title %}{{ location.name }}{% endblock %}
+{% block page %}Location Detail{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h3>{{ location.name }}</h3>
+  <img src="{{ location.image }}" alt="{{ location.name }}" class="responsive-img">
+  <p>{{ location.description }}</p>
+  <p><strong>Type:</strong> {{ location.type }}</p>
+  <p><strong>Coordinates:</strong> {{ location.latitude }}, {{ location.longitude }}</p>
+</div>
+{% endblock %}

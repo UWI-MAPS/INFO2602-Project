@@ -1,0 +1,18 @@
+{% extends 'layout.html' %}
+{% block title %}{{ building.faculty }}{% endblock %}
+{% block page %}Building Details{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h4>{{ building.faculty }}</h4>
+  <p><strong>Number of Floors:</strong> {{ building.num_floors }}</p>
+
+  <ul class="collection">
+    {% for room in building.admin_rooms %}
+    <li class="collection-item">
+      <strong>{{ room.name }}</strong> (Floor {{ room.floor }}) - {{ room.type }}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}
