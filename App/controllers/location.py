@@ -24,3 +24,12 @@ def updateLocationDetails(location_id, name, image, latitude, longitude, type):
         db.session.commit()
         return True
     return False
+
+def deleteLocation(location_id):
+    location = Location.query.filter_by(id=location_id).first()
+
+    if location:
+        db.session.delete(location)
+        db.session.commit()
+        return True
+    return False
