@@ -31,7 +31,7 @@ class Room(db.Model):
             'id': self.id,
             'admin_id': self.admin_id,
             'name': self.name,
-            'building': self.building_id.name,
+            'building': self.building.name if self.building else None,
             'floor': self.floor,
             'latitude': self.latitude,
             'longitude': self.longitude,
