@@ -19,7 +19,6 @@ class BuildingDetails(db.Model):
         return{
             'id': self.id,
             'location_id': self.location_id,
-            'name': self.location.name,
             'faculty': self.faculty,
             'number of floors': self.num_floors
         }
