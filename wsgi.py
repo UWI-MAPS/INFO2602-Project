@@ -3,7 +3,7 @@ from flask import Flask
 from flask.cli import with_appcontext, AppGroup
 
 from App.database import db, get_migrate
-from App.models import User, Admin, BuildingDetails, Location, Room
+from App.models import User, BuildingDetails, Location, Room
 from App.main import create_app
 from App.controllers import *
 
@@ -340,3 +340,6 @@ def delete_room(room_id, building_id):
 
 app.cli.add_command(room)
 
+
+if __name__ == "__main__":
+    app.run(debug=True)
