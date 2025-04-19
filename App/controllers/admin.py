@@ -1,4 +1,4 @@
-from flask_login import login_user, current_user, logout_user
+# from flask_login import login_user, current_user, logout_user
 from flask_jwt_extended import create_access_token, unset_jwt_cookies
 from App.models import Admin, Location, BuildingDetails, Room
 from App.database import db
