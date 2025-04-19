@@ -27,10 +27,13 @@ def login(username, password):
     return token
   return None
 
-def logout():
-    response = redirect(url_for('login_page'))
-    unset_jwt_cookies(response)
-    return response
+# def logout():
+#     response = redirect(url_for('login_page'))
+#     unset_jwt_cookies(response)
+#     return response
+
+# def logout():
+#     logout_user()
     
 def createLocation(admin_id, name, latitude, longitude, type=None, image=None, description=None):
     location = Location.query.filter_by(name=name, latitude=latitude, longitude=longitude).first()
