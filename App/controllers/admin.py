@@ -1,46 +1,34 @@
 # from flask_login import login_user, current_user, logout_user
 from flask_jwt_extended import create_access_token, unset_jwt_cookies
-from App.models import Admin, Location, BuildingDetails, Room
+from App.models import Location, BuildingDetails, Room, User
 from App.database import db
 
-def signup_admin(username, password):
-    admin = Admin.query.filter_by(username=username).first()
-
-    if admin:
-        return None #if admin already exists
-
-    new_admin = Admin(username=username, password=password)
-
-    try:
-        db.session.add(new_admin)
-        db.session.commit()
-        return True
-    except:
-        db.session.rollback()
-        return None
-    
 
 def login(username, password):
-  admin = Admin.query.filter_by(username=username).first()
-  if admin and admin.check_password(password):
-    token = create_access_token(identity=admin.id)
-    return token
-  return None
+    user = User.query.filter_by(username=username).first()
+    if user and user.check_password(password):
+        if user.is_admin:
+            token = create_access_token(identity=user.id)
+            return token
+    return None
 
 # def logout():
 #     response = redirect(url_for('login_page'))
 #     unset_jwt_cookies(response)
 #     return response
 
-# def logout():
-#     logout_user()
+def logout():
+    logout_user()
     
 def createLocation(admin_id, name, latitude, longitude, type=None, image=None, description=None):
-    location = Location.query.filter_by(name=name, latitude=latitude, longitude=longitude).first()
+    admin = User.query.filter_by(id=admin_id, is_admin=True).first()
+    if not admin:
+        return None
 
+    location = Location.query.filter_by(name=name, latitude=latitude, longitude=longitude).first()
     if location:
         return None
-    
+
     try:
         new_location = Location(admin_id=admin_id, name=name, latitude=latitude, longitude=longitude, type=type, image=image, description=description)
         db.session.add(new_location)
@@ -48,7 +36,6 @@ def createLocation(admin_id, name, latitude, longitude, type=None, image=None, d
         return new_location
     except:
         db.session.rollback()
-        print(f"Error creating location")
         return None
 
 def updateLocation(location_id, name, latitude, longitude, type, image, description):
@@ -146,4 +133,4 @@ def deleteRoom(room_id, building_id):
         db.session.delete(room)
         db.session.commit()
         return True
-    return False    
+    return False

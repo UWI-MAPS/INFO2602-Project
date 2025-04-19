@@ -1,4 +1,3 @@
-
 from App.database import db
 
 class BuildingDetails(db.Model):

@@ -5,7 +5,7 @@ class Room(db.Model):
     __tablename__ = 'room'
     id = db.Column(db.Integer, primary_key=True)
     building_id = db.Column(db.Integer, db.ForeignKey('buildingdetails.id'), nullable=False)
-    admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     floor = db.Column(db.Integer)
     name = db.Column(db.String(100), nullable=False)
     latitude = db.Column(db.Float)
@@ -14,7 +14,7 @@ class Room(db.Model):
     image = db.Column(db.String(255))
 
     building = db.relationship('BuildingDetails', backref='rooms')
-    admin = db.relationship('Admin', backref='admin_rooms')
+    admin = db.relationship('User', backref='admin_rooms')
 
     def __init__(self, building_id, admin_id, floor, name, latitude, longitude, type=None, image=None):
             self.building_id = building_id
