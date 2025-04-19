@@ -1,11 +1,12 @@
-from flask import Blueprint, redirect, render_template, request, send_from_directory, jsonify
+from flask import Blueprint, redirect, render_template, request, send_from_directory, jsonify, current_app
 from App.controllers import create_user, initialize
 
 index_views = Blueprint('index_views', __name__, template_folder='../templates')
 
 @index_views.route('/', methods=['GET'])
 def index_page():
-    return render_template('index.html')
+    google_maps_api_key = current_app.config['GOOGLE_MAPS_API_KEY']
+    return render_template('layout.html', google_maps_api_key=google_maps_api_key)
 
 @index_views.route('/init', methods=['GET'])
 def init():
