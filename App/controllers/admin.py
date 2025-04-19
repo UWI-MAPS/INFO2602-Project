@@ -1,14 +1,15 @@
-# from flask_login import login_user, current_user, logout_user
-from App.models import Admin
+from flask_login import login_user, current_user, logout_user
+from flask_jwt_extended import create_access_token, unset_jwt_cookies
+from App.models import Admin, Location, BuildingDetails, Room
 from App.database import db
 
-def signup(username, password):
+def signup_admin(username, password):
     admin = Admin.query.filter_by(username=username).first()
 
     if admin:
         return None #if admin already exists
 
-    new_admin = Admin(username=username, password_hash=password)
+    new_admin = Admin(username=username, password=password)
 
     try:
         db.session.add(new_admin)
@@ -19,41 +20,44 @@ def signup(username, password):
         return None
     
 
-# def login(username,password):
-#     admin = Admin.query.filter_by(username=username).first()
+def login(username, password):
+  admin = Admin.query.filter_by(username=username).first()
+  if admin and admin.check_password(password):
+    token = create_access_token(identity=admin.id)
+    return token
+  return None
 
-#     if admin and admin.check_password(password):
-#         login_user(admin)
-#         return True
-#     return False
-
-# def logout():
-#     logout_user()
+def logout():
+    response = redirect(url_for('login_page'))
+    unset_jwt_cookies(response)
+    return response
     
-def createLocation(name, image, latitude, longitude, type):
+def createLocation(admin_id, name, latitude, longitude, type=None, image=None, description=None):
     location = Location.query.filter_by(name=name, latitude=latitude, longitude=longitude).first()
 
     if location:
         return None
     
     try:
-        new_location = Location(name=name, image=image, latitude=latitude, longitude=longitude, type=type)
+        new_location = Location(admin_id=admin_id, name=name, latitude=latitude, longitude=longitude, type=type, image=image, description=description)
         db.session.add(new_location)
         db.session.commit()
         return new_location
     except:
         db.session.rollback()
+        print(f"Error creating location")
         return None
 
-def updateLocation(location_id, name, image, latitude, longitude, type):
+def updateLocation(location_id, name, latitude, longitude, type, image, description):
     location = Location.query.filter_by(id=location_id).first()
 
     if location:
         location.name = name
-        location.image = image
         location.latitude = latitude
         location.longitude = longitude
         location.type = type
+        location.image = image
+        location.description = description
         db.session.commit()
         return True
     return False
@@ -94,7 +98,7 @@ def updateBuildingDetails(building_details_id, location_id, num_floors, faculty)
     return False
     
 def deleteBuildingDetails(building_details_id, location_id):
-    building = BuildingDetails.query.filter_by(id=building_details_id).first()
+    building = BuildingDetails.query.filter_by(id=building_details_id, location_id=location_id).first()
 
     if building:
         db.session.delete(building)
@@ -117,19 +121,23 @@ def createRoom(building_id, admin_id, floor, name, latitude, longitude, type, im
         db.session.rollback()
         return None
 
-def updateRoom(room_id, building_details_id, admin_id, name, floor, type):
-    room = Room.query.filter_by(id=room_id, building_id=building_details_id, admin_id=admin_id).first()
+def updateRoom(room_id, building_id, admin_id, floor, name, latitude, longitude, type, image):
+    room = Room.query.filter_by(id=room_id, building_id=building_id).first()
 
     if room:
-        room.name = name
+        room.building_id = building_id
         room.floor = floor
+        room.name = name
+        room.latitude = latitude
+        room.longitude = longitude
         room.type = type
+        room.image = image
         db.session.commit()
         return True
     return False
 
-def deleteRoom(room_id, building_details_id, admin_id):
-    room = Room.query.filter_by(id=room_id, building_id=building_details_id, admin_id=admin_id).first()
+def deleteRoom(room_id, building_id):
+    room = Room.query.filter_by(id=room_id, building_id=building_id).first()
     
     if room:
         db.session.delete(room)
