@@ -8,17 +8,15 @@ class BuildingDetails(db.Model):
     num_floors = db.Column(db.Integer)
     faculty = db.Column(db.String(100))
 
-    location = db.relationship('Location', backref='building_details')
-
     def __init__(self, location_id, num_floors, faculty):
-            self.location_id = location_id
-            self.num_floors = num_floors
-            self.faculty = faculty
+        self.location_id = location_id
+        self.num_floors = num_floors
+        self.faculty = faculty
 
     def toJSON(self):
         return{
             'id': self.id,
             'location_id': self.location_id,
-            'faculty': self.faculty,
-            'number of floors': self.num_floors
+            'number of floors': self.num_floors,
+            'faculty': self.faculty
         }

@@ -1,4 +1,4 @@
-from flask_login import login_user, current_user, logout_user
+# from flask_login import login_user, current_user, logout_user
 from App.models import Admin
 from App.database import db
 
@@ -19,16 +19,16 @@ def signup(username, password):
         return None
     
 
-def login(username,password):
-    admin = Admin.query.filter_by(username=username).first()
+# def login(username,password):
+#     admin = Admin.query.filter_by(username=username).first()
 
-    if admin and admin.check_password(password):
-        login_user(admin)
-        return True
-    return False
+#     if admin and admin.check_password(password):
+#         login_user(admin)
+#         return True
+#     return False
 
-def logout():
-    logout_user()
+# def logout():
+#     logout_user()
     
 def createLocation(name, image, latitude, longitude, type):
     location = Location.query.filter_by(name=name, latitude=latitude, longitude=longitude).first()
