@@ -6,7 +6,7 @@ index_views = Blueprint('index_views', __name__, template_folder='../templates')
 @index_views.route('/', methods=['GET'])
 def index_page():
     google_maps_api_key = current_app.config['GOOGLE_MAPS_API_KEY']
-    return render_template('layout.html', google_maps_api_key=google_maps_api_key)
+    return render_template('index.html', google_maps_api_key=google_maps_api_key, show_map=True)
 
 @index_views.route('/init', methods=['GET'])
 def init():

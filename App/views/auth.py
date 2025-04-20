@@ -59,15 +59,19 @@ def logout_action():
 API Routes
 '''
 
+@auth_views.route('/login', methods=['GET'])
+def login_page():
+    return render_template('login.html')
+
 @auth_views.route('/api/login', methods=['POST'])
 def user_login_api():
-  data = request.json
-  token = login(data['username'], data['password'])
-  if not token:
-    return jsonify(message='bad username or password given'), 401
-  response = jsonify(access_token=token) 
-  set_access_cookies(response, token)
-  return response
+    data = request.json
+    token = login(data['username'], data['password'])
+    if not token:
+        return jsonify(error='Bad username or password given'), 401
+    response = jsonify(redirect='/', access_token=token)
+    set_access_cookies(response, token)
+    return response
 
 @auth_views.route('/api/identify', methods=['GET'])
 @jwt_required()
