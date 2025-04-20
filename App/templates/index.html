@@ -10,70 +10,114 @@
 
 {% block scripts %}
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const toggleBtn = document.getElementById('toggle-button');
-    const filterPanel = document.getElementById('filter-panel');
-    const closeArrow = document.getElementById('close-arrow');
-
-    toggleBtn.addEventListener('click', () => {
-      filterPanel.classList.add('open');
-    });
-
-    closeArrow.addEventListener('click', () => {
-      filterPanel.classList.remove('open');
-    });
-
-    const checkboxes = document.querySelectorAll('.faculty-checkbox');
-
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', async (e) => {
-        const targetId = e.target.getAttribute('data-target');
-        const roomList = document.getElementById(targetId);
-
-        if (e.target.checked) {
-          const res = await fetch(`/api/faculty/${targetId}`);
-          const rooms = await res.json();
-
-          roomList.innerHTML = `
-            <ul>
-              ${rooms.map(room => `
-                <li class="room-click" data-lat="${room.lat}" data-lng="${room.lng}">
-                  <i class="material-icons" style="color: #ca1212;">place</i> ${room.name}
-                </li>
-              `).join('')}
-            </ul>
-          `;
-
-          // Redirect map to location on click
-          roomList.querySelectorAll('.room-click').forEach(roomItem => {
-            roomItem.addEventListener('click', () => {
-              const lat = parseFloat(roomItem.dataset.lat);
-              const lng = parseFloat(roomItem.dataset.lng);
-              if (window.map) {
-                window.map.panTo({ lat: lat, lng: lng });
-                window.map.setZoom(18);
-              }
+    let map;
+  
+    // Google Maps API callback
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 10.641, lng: -61.399 },
+        zoom: 15,
+      });
+  
+      window.map = map;
+      setupEventHandlers();
+  
+      // Click to populate create marker sidebar
+      map.addListener("click", (e) => {
+        const lat = e.latLng.lat().toFixed(6);
+        const lng = e.latLng.lng().toFixed(6);
+  
+        document.getElementById("marker-latitude").value = lat;
+        document.getElementById("marker-longitude").value = lng;
+        M.updateTextFields();
+  
+        document.getElementById("create-marker-sidebar").classList.add("open");
+  
+        const previewDiv = document.getElementById("marker-preview-map");
+        previewDiv.innerHTML = "";
+  
+        const previewMap = new google.maps.Map(previewDiv, {
+          center: { lat: parseFloat(lat), lng: parseFloat(lng) },
+          zoom: 18,
+        });
+  
+        new google.maps.Marker({
+          position: { lat: parseFloat(lat), lng: parseFloat(lng) },
+          map: previewMap,
+          title: "Preview",
+        });
+      });
+    }
+  
+    function setupEventHandlers() {
+      const toggleBtn = document.getElementById('toggle-button');
+      const filterPanel = document.getElementById('filter-panel');
+      const closeArrow = document.getElementById('close-arrow');
+  
+      toggleBtn.addEventListener('click', () => filterPanel.classList.add('open'));
+      closeArrow.addEventListener('click', () => filterPanel.classList.remove('open'));
+  
+      // Faculty checkbox logic
+      const checkboxes = document.querySelectorAll('.faculty-checkbox');
+  
+      checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', async (e) => {
+          const targetId = e.target.getAttribute('data-target');
+          const roomList = document.getElementById(targetId);
+  
+          if (e.target.checked) {
+            const res = await fetch(`/api/faculty/${targetId}`);
+            const rooms = await res.json();
+  
+            roomList.innerHTML = '';
+            const ul = document.createElement('ul');
+  
+            rooms.forEach(room => {
+              const li = document.createElement('li');
+              li.className = 'room-entry';
+              li.dataset.lat = room.lat;
+              li.dataset.lng = room.lng;
+              li.innerHTML = `<i class="material-icons" style="color: #4caf50;">place</i> ${room.name}`;
+  
+              li.addEventListener('click', () => {
+                const lat = parseFloat(li.dataset.lat);
+                const lng = parseFloat(li.dataset.lng);
+                if (window.map) {
+                  window.map.panTo({ lat, lng });
+                  window.map.setZoom(18);
+                }
+              });
+  
+              ul.appendChild(li);
             });
-          });
-
-        } else {
-          roomList.innerHTML = '';
-        }
+  
+            roomList.appendChild(ul);
+          } else {
+            roomList.innerHTML = '';
+          }
+        });
       });
-    });
-
-    // Search filter logic
-    const searchInput = document.getElementById('search');
-    const facultyItems = document.querySelectorAll('.faculty-item');
-
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.toLowerCase().trim();
-
-      facultyItems.forEach(item => {
-        const labelText = item.innerText.toLowerCase();
-        item.style.display = labelText.includes(query) ? 'block' : 'none';
+  
+      // Search filter
+      const searchInput = document.getElementById('search');
+      const facultyItems = document.querySelectorAll('.faculty-item');
+  
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase().trim();
+        facultyItems.forEach(item => {
+          const labelText = item.innerText.toLowerCase();
+          item.style.display = labelText.includes(query) ? 'block' : 'none';
+        });
       });
-    });
-  });
-</script>
-{% endblock %}
+  
+      // Create marker sidebar toggler
+      const createBtn = document.getElementById('create-marker-button');
+      const createSidebar = document.getElementById('create-marker-sidebar');
+      const closeCreate = document.getElementById('close-create-marker');
+  
+      createBtn.addEventListener('click', () => createSidebar.classList.add('open'));
+      closeCreate.addEventListener('click', () => createSidebar.classList.remove('open'));
+    }
+  </script>
+  {% endblock %}
+  
