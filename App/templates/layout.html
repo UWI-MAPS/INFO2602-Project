@@ -28,7 +28,7 @@
           </div>
       </nav>
       {% block content %}{% endblock %}
-      
+
       <!-- Toggle Button -->
       <a id="toggle-button" class="btn-floating btn-large waves-effect waves-light purple">
         <i class="material-icons">menu</i>
@@ -292,6 +292,21 @@
       }
     </script>
     {% endif %}
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const toggleBtn = document.getElementById('toggle-button');
+        const filterPanel = document.getElementById('filter-panel');
+        const closeArrow = document.getElementById('close-arrow');
     
+        toggleBtn.addEventListener('click', () => {
+        filterPanel.classList.add('open');
+        });
+
+        closeArrow.addEventListener('click', () => {
+        filterPanel.classList.remove('open');
+        });
+
+      });
+    </script>
   </body>
 </html>
