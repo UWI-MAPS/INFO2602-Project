@@ -29,15 +29,24 @@ def identify_page():
 
 @auth_views.route('/login', methods=['POST'])
 def login_action():
-    data = request.form
-    token = login(data['username'], data['password'])
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    if not username or not password:
+        flash("Please enter both username and password.")
+        return redirect(request.referrer)
+
+    token = login(username, password)
     response = redirect(request.referrer)
+
     if not token:
         flash('Bad username or password given'), 401
     else:
         flash('Login Successful')
         set_access_cookies(response, token) 
+
     return response
+
 
 @auth_views.route('/logout', methods=['GET'])
 def logout_action():
