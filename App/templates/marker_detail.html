@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}Marker Details{% endblock %}
+
+{% block page %}Marker Details{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 30px;">
+  <h4>{{ marker.name }}</h4>
+
+  <div class="card">
+    <div class="card-content">
+      <p><strong>Type:</strong> {{ marker.type }}</p>
+      <p><strong>Faculty:</strong> {{ marker.faculty }}</p>
+      <p><strong>Latitude:</strong> {{ marker.latitude }}</p>
+      <p><strong>Longitude:</strong> {{ marker.longitude }}</p>
+    </div>
+
+    {% if marker.type == 'building' %}
+    <div class="card-action">
+      <a href="/building/{{ marker.id }}">View Rooms</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <a href="/" class="btn grey lighten-1">← Back to Map</a>
+</div>
+{% endblock %}
