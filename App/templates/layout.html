@@ -332,5 +332,24 @@
         });
       });
       </script>      
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const searchInput = document.getElementById('search');
+          const facultyItems = document.querySelectorAll('.faculty-item');
+        
+          searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase().trim();
+        
+            facultyItems.forEach(item => {
+              const labelText = item.innerText.toLowerCase();
+              if (labelText.includes(query)) {
+                item.style.display = 'block';
+              } else {
+                item.style.display = 'none';
+              }
+            });
+          });
+        });
+        </script>        
   </body>
 </html>
