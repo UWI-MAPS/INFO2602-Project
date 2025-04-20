@@ -292,64 +292,6 @@
       }
     </script>
     {% endif %}
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const toggleBtn = document.getElementById('toggle-button');
-        const filterPanel = document.getElementById('filter-panel');
-        const closeArrow = document.getElementById('close-arrow');
-      
-        toggleBtn.addEventListener('click', () => {
-          filterPanel.classList.add('open');
-        });
-      
-        closeArrow.addEventListener('click', () => {
-          filterPanel.classList.remove('open');
-        });
-      
-        // === AJAX Part for Faculty Checkboxes ===
-        const checkboxes = document.querySelectorAll('.faculty-checkbox');
-      
-        checkboxes.forEach(checkbox => {
-          checkbox.addEventListener('change', async (e) => {
-            const targetId = e.target.getAttribute('data-target');
-            const roomList = document.getElementById(targetId);
-      
-            if (e.target.checked) {
-              const res = await fetch(`/api/faculty/${targetId}`);
-              const rooms = await res.json();
-      
-              roomList.innerHTML = `
-                <ul>
-                  ${rooms.map(room => `
-                    <li><i class="material-icons" style="color: #4caf50;">place</i> ${room}</li>
-                  `).join('')}
-                </ul>
-              `;
-            } else {
-              roomList.innerHTML = '';
-            }
-          });
-        });
-      });
-      </script>      
-      <script>
-        document.addEventListener('DOMContentLoaded', function () {
-          const searchInput = document.getElementById('search');
-          const facultyItems = document.querySelectorAll('.faculty-item');
-        
-          searchInput.addEventListener('input', () => {
-            const query = searchInput.value.toLowerCase().trim();
-        
-            facultyItems.forEach(item => {
-              const labelText = item.innerText.toLowerCase();
-              if (labelText.includes(query)) {
-                item.style.display = 'block';
-              } else {
-                item.style.display = 'none';
-              }
-            });
-          });
-        });
-        </script>        
+    {% block scripts %}{% endblock %}        
   </body>
 </html>
