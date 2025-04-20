@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, jsonify, request, send_from_directory, flash, redirect, url_for
 from flask_jwt_extended import jwt_required, current_user as jwt_current_user
-from App.models import Building
+from App.models import BuildingDetails
 from.index import index_views
 
 from App.controllers import (
@@ -41,7 +41,7 @@ def static_user_page():
 
 @user_views.route("/marker/<int:id>")
 def view_marker(id):
-    marker = Building.query.get(id)
+    marker = BuildingDetails.query.get(id)
     if not marker:
         return render_template("404.html"), 404
     return render_template("marker_detail.html", marker=marker)
