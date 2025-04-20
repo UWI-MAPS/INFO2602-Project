@@ -45,3 +45,8 @@ def view_marker(id):
     if not marker:
         return render_template("404.html"), 404
     return render_template("marker_detail.html", marker=marker)
+
+@user_views.route('/markers', methods=['GET'])
+def list_markers():
+    markers = BuildingDetails.query.all()
+    return render_template('marker_list.html', markers=markers)
