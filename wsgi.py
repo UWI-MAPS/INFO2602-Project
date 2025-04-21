@@ -82,8 +82,8 @@ Admin Commands
 admin = AppGroup('admin', help='Admin commands') 
 
 @admin.command("login", help="Log in admin user")
-@click.argument("username", default="pam")
-@click.argument("password", default="pampass")
+@click.argument("username", default="bob")
+@click.argument("password", default="bobpass")
 def login_admin(username, password):
     if login(username, password):
         print(f'{username} logged in successfully')
