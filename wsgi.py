@@ -17,7 +17,7 @@ migrate = get_migrate(app)
 
 
 #added
-app.config['GOOGLEMAPS_KEY'] = "8JZ7i18MjFuM35dJHq70n3Hx4"
+app.config['GOOGLEMAPS_KEY'] = "AIzaSyCRhtWlGkoSdlR5-1xp03JfjUeYB6z-VeU"
 GoogleMaps(app)
 
 
@@ -89,11 +89,6 @@ def login_admin(username, password):
         print(f'{username} logged in successfully')
     else:
         print(f'Error: Admin user {username} already logged in or does not exists.')
-
-@admin.command("logout", help="Log out admin user")
-def logout_admin():
-    if logout():
-        print("Admin logged out successfully")
         
 @admin.command("location", help= "Create location")
 @click.argument("admin_id", default="1")
