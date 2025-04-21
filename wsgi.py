@@ -81,15 +81,6 @@ Admin Commands
 '''
 admin = AppGroup('admin', help='Admin commands') 
 
-@admin.command("signup", help="Create an admin user")
-@click.argument("username", default="pam")
-@click.argument("password", default="pampass")
-def create_admin(username, password):
-    if signup_admin(username, password):
-        print(f'Admin user {username} created successfully!')
-    else:
-        print(f'Error: Admin user {username} already exists.')
-
 @admin.command("login", help="Log in admin user")
 @click.argument("username", default="pam")
 @click.argument("password", default="pampass")
