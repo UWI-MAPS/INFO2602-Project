@@ -1,4 +1,3 @@
-# from flask_login import login_user, current_user, logout_user
 from flask_jwt_extended import create_access_token, unset_jwt_cookies
 from App.models import Location, BuildingDetails, Room, User
 from App.database import db
@@ -11,11 +10,6 @@ def login(username, password):
             token = create_access_token(identity=user.id)
             return token
     return None
-
-# def logout():
-#     response = redirect(url_for('login_page'))
-#     unset_jwt_cookies(response)
-#     return response
 
 def logout():
     logout_user()
