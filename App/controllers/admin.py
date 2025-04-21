@@ -10,9 +10,6 @@ def login(username, password):
             token = create_access_token(identity=user.id)
             return token
     return None
-
-def logout():
-    logout_user()
     
 def createLocation(admin_id, name, latitude, longitude, type=None, image=None, description=None):
     admin = User.query.filter_by(id=admin_id, is_admin=True).first()
