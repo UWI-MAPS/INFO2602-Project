@@ -15,7 +15,8 @@ def load_config(app, overrides):
     app.config["JWT_COOKIE_SECURE"] = True
     app.config["JWT_COOKIE_CSRF_PROTECT"] = False
     app.config['FLASK_ADMIN_SWATCH'] = 'darkly'
-    app.config['JWT_SECRET_KEY'] = 'your_secret_key'  # Replace with your actual secret key
+    # app.config['JWT_SECRET_KEY'] = 'your_secret_key'  # Replace with your actual secret key
+    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY') 
     
     #maps api key
     app.config['GOOGLE_MAPS_API_KEY'] = os.getenv('GOOGLE_MAPS_API_KEY', 'AIzaSyCRhtWlGkoSdlR5-1xp03JfjUeYB6z-VeU')
