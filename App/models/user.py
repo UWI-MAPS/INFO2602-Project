@@ -5,12 +5,10 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
-    is_admin = db.Column(db.Boolean, default=True)
 
-    def __init__(self, username, password, is_admin=True):
+    def __init__(self, username, password):
         self.username = username
         self.set_password(password)
-        self.is_admin = is_admin
 
     def get_json(self, include_admin=False):
         """Return a JSON representation of the user."""

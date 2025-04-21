@@ -1,18 +1,26 @@
 from flask_jwt_extended import create_access_token, unset_jwt_cookies
+from flask import session, redirect, url_for, flash
 from App.models import Location, BuildingDetails, Room, User
 from App.database import db
 
 
 def login(username, password):
     user = User.query.filter_by(username=username).first()
-    if user and user.check_password(password):
-        if user.is_admin:
-            token = create_access_token(identity=user.id)
-            return token
-    return None
+    if not user:
+        flash("Invalid username or password", "error")
+        return None, None 
+    if user.check_password(password):
+        token = create_access_token(identity=user.id)
+        print(f"DEBUG: Generated Token: {token}")
+        return token, user 
+    else:
+        flash("Invalid username or password", "error")
+        return None, None 
+
+
     
 def createLocation(admin_id, name, latitude, longitude, type=None, image=None, description=None):
-    admin = User.query.filter_by(id=admin_id, is_admin=True).first()
+    admin = User.query.filter_by(id=admin_id).first() 
     if not admin:
         return None
 

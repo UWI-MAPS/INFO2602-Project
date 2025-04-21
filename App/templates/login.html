@@ -23,15 +23,14 @@
       <button type="submit" class="btn waves-effect waves-light">Login</button>
     </div>
   </form>
-
   {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <div class="card-panel red lighten-4">
-        {% for message in messages %}
-          <p class="red-text">{{ message }}</p>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
+  {% if messages %}
+    <div class="card-panel red lighten-4">
+      {% for message in messages %}
+        <p class="red-text">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
 </div>
 {% endblock %}

@@ -8,11 +8,8 @@ def index_page():
     google_maps_api_key = current_app.config['GOOGLE_MAPS_API_KEY']
     return render_template('index.html', google_maps_api_key=google_maps_api_key, show_map=True)
 
+
 @index_views.route('/init', methods=['GET'])
 def init():
     initialize()
     return jsonify(message='db initialized!')
-
-@index_views.route('/health', methods=['GET'])
-def health_check():
-    return jsonify({'status':'healthy'})

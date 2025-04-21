@@ -15,9 +15,9 @@
       <nav>
           <div class="nav-wrapper">
               <a href="#!" class="brand-logo center">{% block page %}UWI MAP{% endblock %}</a>
-              {% if is_authenticated %}
+              {% if session['is_authenticated'] %}
               <ul id="nav-mobile" class="right">
-                <li><a href="/logout">Logout</a></li>
+                <li><a href="/logout" class="btn waves-effect waves-light red">Logout</a></li>
               </ul>
               {% else %}
               <ul id="nav-mobile" class="right">
@@ -27,9 +27,11 @@
               
           </div>
       </nav>
-      {% block content %}{% endblock %}
+      
+        {% block content %}{% endblock %}
 
       <!-- Toggle Button -->
+      {% if show_map %}
       <a id="toggle-button" class="btn-floating btn-large waves-effect waves-light purple">
         <i class="material-icons">menu</i>
       </a>
@@ -95,6 +97,7 @@
         <a href="#contact" class="btn purple">Contact Us</a>
       </div>
 
+      {% if session.get('is_authenticated') %}
       <!-- Bottom-right button -->
       <a id="create-marker-button" class="btn-floating btn-large waves-effect waves-light blue">
         <i class="material-icons">add</i>
@@ -277,21 +280,23 @@
           </div>
         </form>
       </div>
-      {% if show_map %}
+      {% endif %}
+    
+
       <!-- Map -->
       <div id="map"></div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
-    <script>
-      function initMap() {
-        const map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 10.641, lng: -61.399 },
-          zoom: 15,
-        });
-      }
-    </script>
-    {% endif %}
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+      <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+      <script>
+        function initMap() {
+          const map = new google.maps.Map(document.getElementById("map"), {
+            center: { lat: 10.641, lng: -61.399 },
+            zoom: 15,
+          });
+        }
+      </script>
+      {% endif %}
     {% block scripts %}{% endblock %}        
   </body>
 </html>
