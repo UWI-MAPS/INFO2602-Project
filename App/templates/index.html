@@ -27,21 +27,13 @@
 
     let roomLatInput;
     let roomLngInput;
-    // Add other room input references if needed by JS form handling
 
-    // Array to keep track of Google Maps marker objects currently on the map
     let mapMarkers = [];
 
 
-    // --- Embed Location data from the server ---
-    // Receive locations list (as dictionaries from toJSON) from Flask and convert to JSON string
-    // This data is available as soon as the page loads
     const initialMarkersData = {{ markers | tojson }}; // This now contains Location objects via toJSON
     console.log("Initial locations from server:", initialMarkersData); // Debug log
-    // --- End Embed Location data ---
-
-
-    // Google Maps API callback - called by the Google Maps script once it's loaded
+  
     function initMap() {
     // Ensure the map div exists before initializing
       const mapElement = document.getElementById("map");
@@ -113,8 +105,6 @@
     } 
 
 
-    // Function to add a single marker (Location) to the Google Map
-    // Called from initMap (for existing) and form submission (for new)
     function addMarkerToMap(locationData) { // Renamed parameter to locationData
         // Basic check if locationData is valid
         if (!locationData || typeof locationData.latitude === 'undefined' || typeof locationData.longitude === 'undefined') {
