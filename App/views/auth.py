@@ -22,7 +22,7 @@ def login_page():
 
 @auth_views.route('/login', methods=['POST'])
 def login_action():
-    username = request.form.get('username')
+    username = str(request.form.get('username')).strip()
     password = request.form.get('password')
     next_url = url_for('index_views.index_page') 
     token, user = login(username, password) 
