@@ -84,6 +84,12 @@
           <li class="faculty-item">
             <label>
               <input type="checkbox" class="filled-in" />
+              <span>Faculty: Sports</span>
+            </label>
+          </li>
+          <li class="faculty-item">
+            <label>
+              <input type="checkbox" class="filled-in" />
               <span>Faculty: Law</span>
             </label>
           </li>
@@ -146,18 +152,19 @@
             <!-- Faculty and # Floors Fields -->
             <div class="row">
               <div class="input-field col s6">
-                <select id="marker-faculty" required>
+                <select id="marker-faculty">
                   <option value="" disabled selected>Faculty</option>
                   <option value="science-tech">Science & Tech</option>
                   <option value="engineering">Engineering</option>
                   <option value="social-sciences">Social Sciences</option>
+                  <option value="sports">Sports</option>
                   <option value="law">Law</option>
                   <option value="humanities">Humanities & Education</option>
                 </select>
 
               </div>
               <div class="input-field col s6">
-                <select id="marker-floors" required>
+                <select id="marker-floors">
                   <option value="" disabled selected># of Floors</option>
                   <option value="1">1</option>
                   <option value="2">2</option>

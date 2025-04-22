@@ -3,121 +3,661 @@
 {% block page %}UWI MAP{% endblock %}
 
 {% block content %}
-    {% if is_authenticated %}
-        <p class="center-align">Welcome {{ current_user.username }}</p>
-    {% endif %}
+
 {% endblock %}
 
 {% block scripts %}
 <script>
     let map;
-  
-    // Google Maps API callback
+    // Declare variables for sidebar and input elements
+    let createMarkerSidebar;
+    let roomSidebar;
+    let filterPanel;
+    // References to input elements in Create Marker form (matching Location model)
+    let markerNameInput;
+    let markerLatInput;
+    let markerLngInput;
+    let markerTypeSelect; // This corresponds to Location.type
+    let markerFacultySelect; // This is BuildingDetails.faculty (will be ignored for now)
+    let markerFloorsSelect; // This is BuildingDetails.num_floors (will be ignored for now)
+    let markerDescriptionTextarea;
+    let markerImageInput; // For file input
+    let markerImagePreviewDiv; // For preview container
+    let markerPreviewMapDiv;
+
+    let roomLatInput;
+    let roomLngInput;
+    // Add other room input references if needed by JS form handling
+
+    // Array to keep track of Google Maps marker objects currently on the map
+    let mapMarkers = [];
+
+
+    // --- Embed Location data from the server ---
+    // Receive locations list (as dictionaries from toJSON) from Flask and convert to JSON string
+    // This data is available as soon as the page loads
+    const initialMarkersData = {{ markers | tojson }}; // This now contains Location objects via toJSON
+    console.log("Initial locations from server:", initialMarkersData); // Debug log
+    // --- End Embed Location data ---
+
+
+    // Google Maps API callback - called by the Google Maps script once it's loaded
     function initMap() {
-      map = new google.maps.Map(document.getElementById("map"), {
+    // Ensure the map div exists before initializing
+      const mapElement = document.getElementById("map");
+      if (!mapElement) {
+          console.error("Map element #map not found!");
+          // Maybe display an error message to the user
+          return; // Stop if map element is missing
+      }
+
+     map = new google.maps.Map(mapElement, {
         center: { lat: 10.641, lng: -61.399 },
         zoom: 15,
-      });
-  
-      window.map = map;
-      setupEventHandlers();
-  
-      // Click to populate create marker sidebar
-      map.addListener("click", (e) => {
+        // Add map type control, zoom control etc. if desired
+    });
+
+    window.map = map; // Make map globally accessible if needed elsewhere
+
+      // Load initial markers onto the map immediately after map is initialized
+      loadInitialMarkers(initialMarkersData);
+
+      // Setup other event handlers
+    setupEventHandlers();
+
+
+    // Map Click Listener: Populate fields based on which sidebar is open
+    map.addListener("click", (e) => {
         const lat = e.latLng.lat().toFixed(6);
         const lng = e.latLng.lng().toFixed(6);
-  
-        document.getElementById("marker-latitude").value = lat;
-        document.getElementById("marker-longitude").value = lng;
-        M.updateTextFields();
-  
-        document.getElementById("create-marker-sidebar").classList.add("open");
-  
-        const previewDiv = document.getElementById("marker-preview-map");
-        previewDiv.innerHTML = "";
-  
-        const previewMap = new google.maps.Map(previewDiv, {
-          center: { lat: parseFloat(lat), lng: parseFloat(lng) },
-          zoom: 18,
+
+        // Check if the Room Sidebar is open and its inputs exist
+        if (roomSidebar && roomSidebar.classList.contains('open') && roomLatInput && roomLngInput) {
+             // Populate Room fields
+             roomLatInput.value = lat;
+             roomLngInput.value = lng;
+             M.updateTextFields(); // Update Materialize labels
+
+        }
+        // Check if the Create Marker Sidebar is open and its inputs exist
+        else if (createMarkerSidebar && createMarkerSidebar.classList.contains('open') && markerLatInput && markerLngInput) {
+             // Populate Create Marker fields and show preview
+             markerLatInput.value = lat;
+             markerLngInput.value = lng;
+             M.updateTextFields(); // Update Materialize labels
+
+             const previewDiv = document.getElementById("marker-preview-map");
+             if (previewDiv) {
+                 // Ensure the preview map div is visible if it was hidden by CSS
+                 previewDiv.style.display = 'block';
+                 previewDiv.innerHTML = ""; // Clear previous map
+                 const previewMap = new google.maps.Map(previewDiv, {
+                   center: { lat: parseFloat(lat), lng: parseFloat(lng) },
+                   zoom: 18,
+                   disableDefaultUI: true,
+                   gestureHandling: 'none',
+                   zoomControl: false
+                 });
+                 new google.maps.Marker({
+                   position: { lat: parseFloat(lat), lng: parseFloat(lng) },
+                   map: previewMap,
+                   title: "Preview",
+                 });
+             } else {
+                 console.warn("Marker preview map element #marker-preview-map not found.");
+             }
+
+        }
+
+    }); 
+    } 
+
+
+    // Function to add a single marker (Location) to the Google Map
+    // Called from initMap (for existing) and form submission (for new)
+    function addMarkerToMap(locationData) { // Renamed parameter to locationData
+        // Basic check if locationData is valid
+        if (!locationData || typeof locationData.latitude === 'undefined' || typeof locationData.longitude === 'undefined') {
+            console.error("Invalid location data received for adding to map:", locationData);
+            return null; // Return null if data is invalid
+        }
+
+        const latLng = { lat: parseFloat(locationData.latitude), lng: parseFloat(locationData.longitude) };
+
+        // Check if lat/lng are valid numbers after parsing
+        if (isNaN(latLng.lat) || isNaN(latLng.lng)) {
+             console.error("Invalid latitude or longitude in location data:", locationData);
+             return null;
+        }
+
+        const marker = new google.maps.Marker({
+            position: latLng,
+            map: map, // Use the global map instance
+            title: locationData.name || 'Unnamed Location', // Use name or a default
+            // icon: getMarkerIcon(locationData.type), // Optional: customize icons based on type
+            // Store all location data on the marker object itself for easy access later
+            markerData: locationData // Attach data to the marker object (using key markerData)
         });
-  
-        new google.maps.Marker({
-          position: { lat: parseFloat(lat), lng: parseFloat(lng) },
-          map: previewMap,
-          title: "Preview",
+
+        // Add click listener to the marker (e.g., to show info window or edit form)
+        marker.addListener('click', function() {
+            console.log('Marker clicked:', this.markerData); // Access data via 'this.markerData'
+            // Implement displaying location details (info window or sidebar)
+             displayMarkerInfo(this.markerData); // Assuming you create this function
         });
-      });
+
+        // Add the created marker object to our local array
+        mapMarkers.push(marker);
+
+        return marker; // Return the created marker object
     }
-  
+
+    // Function to load initial markers (Locations) onto the map
+    // Called by initMap
+    function loadInitialMarkers(locationsData) { // Renamed parameter
+         if (!map) {
+             console.error("Map not initialized yet. Cannot load initial locations.");
+             return;
+         }
+         // Clear any existing markers before loading (useful if map is re-initialized or data reloaded)
+         mapMarkers.forEach(marker => marker.setMap(null));
+         mapMarkers = []; // Clear the array
+
+         if (!locationsData || locationsData.length === 0) {
+             console.log("No initial locations data provided or data is empty.");
+             return;
+         }
+
+         locationsData.forEach(locationData => { // Loop through locationData
+             addMarkerToMap(locationData); // Use the addMarkerToMap function with location data
+         });
+         console.log(`Loaded ${mapMarkers.length} initial locations.`);
+    }
+
+
+    // Function to set up all general UI event handlers
     function setupEventHandlers() {
+      // Get references to all necessary elements
+      createMarkerSidebar = document.getElementById('create-marker-sidebar');
+      roomSidebar = document.getElementById('room-sidebar');
+      filterPanel = document.getElementById('filter-panel');
+
+      // Get references to input elements in Create Marker form
+      markerNameInput = document.getElementById('marker-name');
+      markerLatInput = document.getElementById("marker-latitude");
+      markerLngInput = document.getElementById("marker-longitude");
+      markerTypeSelect = document.getElementById('marker-building'); // Corresponds to Location.type
+      markerFacultySelect = document.getElementById('marker-faculty'); // Corresponds to BuildingDetails.faculty
+      markerFloorsSelect = document.getElementById('marker-floors'); // Corresponds to BuildingDetails.num_floors
+      markerDescriptionTextarea = document.getElementById('marker-description');
+      markerImageInput = document.getElementById('marker-image-input');
+      markerImagePreviewDiv = document.getElementById('marker-image-preview'); // Preview container
+      markerPreviewMapDiv = document.getElementById('marker-preview-map');
+
+
+      roomLatInput = document.getElementById("room-latitude");
+      roomLngInput = document.getElementById("room-longitude");
+      // Get other room input references if needed
+
+
       const toggleBtn = document.getElementById('toggle-button');
-      const filterPanel = document.getElementById('filter-panel');
       const closeArrow = document.getElementById('close-arrow');
-  
-      toggleBtn.addEventListener('click', () => filterPanel.classList.add('open'));
-      closeArrow.addEventListener('click', () => filterPanel.classList.remove('open'));
-  
-      // Faculty checkbox logic
+
+      // Check if these elements exist before adding listeners
+      if (toggleBtn && filterPanel && closeArrow) {
+          toggleBtn.addEventListener('click', () => filterPanel.classList.add('open'));
+          closeArrow.addEventListener('click', () => filterPanel.classList.remove('open'));
+      } else {
+          console.warn("Filter panel elements not found. Filter toggle disabled.");
+      }
+
+
+      // Faculty checkbox logic (keep your existing code)
       const checkboxes = document.querySelectorAll('.faculty-checkbox');
-  
-      checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', async (e) => {
-          const targetId = e.target.getAttribute('data-target');
-          const roomList = document.getElementById(targetId);
-  
-          if (e.target.checked) {
-            const res = await fetch(`/api/faculty/${targetId}`);
-            const rooms = await res.json();
-  
-            roomList.innerHTML = '';
-            const ul = document.createElement('ul');
-  
-            rooms.forEach(room => {
-              const li = document.createElement('li');
-              li.className = 'room-entry';
-              li.dataset.lat = room.lat;
-              li.dataset.lng = room.lng;
-              li.innerHTML = `<i class="material-icons" style="color: #4caf50;">place</i> ${room.name}`;
-  
-              li.addEventListener('click', () => {
-                const lat = parseFloat(li.dataset.lat);
-                const lng = parseFloat(li.dataset.lng);
-                if (window.map) {
-                  window.map.panTo({ lat, lng });
-                  window.map.setZoom(18);
-                }
-              });
-  
-              ul.appendChild(li);
-            });
-  
-            roomList.appendChild(ul);
-          } else {
-            roomList.innerHTML = '';
-          }
-        });
-      });
-  
-      // Search filter
+      if (checkboxes.length > 0 && filterPanel) {
+          checkboxes.forEach(checkbox => {
+              checkbox.removeEventListener('change', handleCheckboxChange); // Remove existing listener
+              checkbox.addEventListener('change', handleCheckboxChange); // Add listener
+          });
+      } else {
+           console.log("No faculty checkboxes found or filter panel is missing. Faculty filter disabled.");
+      }
+
+      let fetchTimeout;
+      function handleCheckboxChange(e) {
+          clearTimeout(fetchTimeout); // Clear any previous timeout
+          fetchTimeout = setTimeout(async () => {
+              const targetId = e.target.getAttribute('data-target');
+              const roomList = document.getElementById(targetId);
+
+              if (e.target.checked && roomList) {
+                  try {
+                      const res = await fetch(`/api/faculty/${targetId}`);
+                      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                      const rooms = await res.json();
+
+                      roomList.innerHTML = ''; // Clear existing rows
+                      const ul = document.createElement('ul');
+
+                      rooms.forEach(room => {
+                          const li = document.createElement('li');
+                          li.className = 'room-entry';
+                          li.dataset.lat = room.latitude;
+                          li.dataset.lng = room.longitude;
+                          li.innerHTML = `<i class="material-icons" style="color: #4caf50;">place</i> ${room.name || 'Unnamed Room'}`;
+
+                          ul.appendChild(li);
+                      });
+
+                      roomList.appendChild(ul);
+                  } catch (error) {
+                      console.error("Error fetching or displaying rooms:", error);
+                      roomList.innerHTML = '<li>Error loading rooms.</li>';
+                  }
+              }
+          }, 300); // Delay API call by 300ms
+      }
+
+
+      // Search filter (keep your existing code)
       const searchInput = document.getElementById('search');
       const facultyItems = document.querySelectorAll('.faculty-item');
-  
-      searchInput.addEventListener('input', () => {
-        const query = searchInput.value.toLowerCase().trim();
-        facultyItems.forEach(item => {
-          const labelText = item.innerText.toLowerCase();
-          item.style.display = labelText.includes(query) ? 'block' : 'none';
-        });
-      });
-  
+      if (searchInput && facultyItems.length > 0) {
+          searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase().trim();
+            facultyItems.forEach(item => {
+              const labelText = item.innerText ? item.innerText.toLowerCase() : '';
+              item.style.display = labelText.includes(query) ? 'flex' : 'none';
+            });
+             // TODO: Implement filtering of rooms within the expanded nested lists if needed
+             // TODO: Implement filtering of actual markers on the map
+          });
+      } else {
+          console.log("Search input or faculty items not found. Search filter disabled.");
+      }
+
+
       // Create marker sidebar toggler
       const createBtn = document.getElementById('create-marker-button');
-      const createSidebar = document.getElementById('create-marker-sidebar');
       const closeCreate = document.getElementById('close-create-marker');
-  
-      createBtn.addEventListener('click', () => createSidebar.classList.add('open'));
-      closeCreate.addEventListener('click', () => createSidebar.classList.remove('open'));
-    }
+
+      // Check if these elements exist before adding listeners
+      if (createBtn && createMarkerSidebar && closeCreate) {
+          createBtn.addEventListener('click', () => {
+              // Close other sidebars first
+              if(roomSidebar) roomSidebar.classList.remove('open');
+              if(filterPanel) filterPanel.classList.remove('open');
+              // Open this sidebar
+              createMarkerSidebar.classList.add('open');
+              console.log('Create Marker button clicked! Sidebar opened.');
+          });
+          closeCreate.addEventListener('click', () => {
+              createMarkerSidebar.classList.remove('open');
+              console.log('Create Marker sidebar close button clicked. Sidebar closed.');
+          });
+      } else {
+          console.warn("Create Marker sidebar elements not found. Check IDs or if user is logged in. Create button disabled.");
+      }
+
+
+      // Add Room button & Room Sidebar toggler
+      const addRoomsButton = document.getElementById('add-rooms-button');
+      const closeRoomSidebar = document.getElementById('close-room-sidebar'); // Need close button too
+
+      // Check if these elements exist before adding listeners
+      if (addRoomsButton && roomSidebar && createMarkerSidebar && closeRoomSidebar) { // createMarkerSidebar is needed to close it
+          addRoomsButton.addEventListener('click', () => {
+              // Ensure other sidebars are closed when opening this one
+              createMarkerSidebar.classList.remove('open');
+              if(filterPanel) filterPanel.classList.remove('open');
+              roomSidebar.classList.add('open'); // Open the room sidebar
+              console.log('Add Room button clicked! Room sidebar opened.');
+          });
+
+          // Add event listener for the Room Sidebar close button
+          closeRoomSidebar.addEventListener('click', () => {
+               roomSidebar.classList.remove('open'); // Close the room sidebar
+               console.log('Room sidebar close button clicked. Sidebar closed.');
+          });
+      } else {
+           console.warn("Add Room button or Room sidebar elements not found. Check IDs or if user is logged in. Add Room button disabled.");
+           console.log("Elements check results:", { addRoomsButton, roomSidebar, createMarkerSidebar, closeRoomSidebar });
+      }
+      // --- End Add Room Button & Room Sidebar FIX ---
+
+
+      // --- Implement the form submission for the Create Marker form (#create-marker-form) ---
+      // This needs to prevent default submission, collect data, send via AJAX (fetch) to your backend API (/api/markers POST)
+      // and handle the response (add marker to map, show success/error, close sidebar)
+      const createMarkerForm = document.getElementById('create-marker-form');
+      if (createMarkerForm && createMarkerSidebar) {
+           createMarkerForm.addEventListener('submit', async (event) => {
+               event.preventDefault(); // Prevent the default browser form submission
+
+               console.log("Create Marker form submitted!");
+
+               // 1. Collect data from the form fields (matching Location model fields primarily)
+               const name = markerNameInput ? markerNameInput.value : '';
+               const latitude = markerLatInput ? parseFloat(markerLatInput.value) : NaN;
+               const longitude = markerLngInput ? parseFloat(markerLngInput.value) : NaN;
+               const type = markerTypeSelect ? markerTypeSelect.value : ''; // Location.type
+               // Faculty and floors are BuildingDetails fields, not on Location model directly.
+               // We are NOT collecting/sending these to the /api/markers route for now, as per your request.
+               // If you add BuildingDetails creation later, you'll need to collect these and potentially
+               // send them as part of the markerData or in a separate request.
+               const description = markerDescriptionTextarea ? markerDescriptionTextarea.value : '';
+
+               // TODO: Handle image upload. This needs to send the file data.
+               // You could upload the image first, get a URL, then include the URL in markerData,
+               // or send the file along with other data using FormData to the API route.
+               const imageFile = markerImageInput ? markerImageInput.files[0] : null; // Get the selected file object
+               let imageUrl = null; // Variable to hold image URL if uploaded/selected
+
+               // --- Basic client-side validation ---
+               if (!name || isNaN(latitude) || isNaN(longitude) || !type) { // Required fields for Location
+                    M.toast({html: 'Please fill in all required fields for the location (Name, Coordinates, Type).', classes: 'yellow darken-3'});
+                    console.warn("Form validation failed client-side.");
+                    return; // Stop the submission
+               }
+
+               // Create the data object to send (matching Location fields)
+               const locationDataToSave = {
+                   name: name,
+                   latitude: latitude,
+                   longitude: longitude,
+                   type: type,
+                   description: description,
+                   image: imageUrl // Will be null for now unless you add upload logic
+               };
+
+               console.log("Location data collected to send:", locationDataToSave);
+
+
+               // 2. Send data to the backend API using fetch
+               try {
+                   // Get JWT token (assuming it's stored in a cookie)
+                   const jwtToken = window.getCookie ? window.getCookie('access_token_cookie') : null;
+
+
+                   // Use FormData if you are sending a file
+                   // Otherwise, use JSON.stringify
+                   let requestBody;
+                   let headers = {
+                       'Authorization': `Bearer ${jwtToken}`
+                   };
+
+                   // Example using JSON (assuming image is handled separately or not included here)
+                   headers['Content-Type'] = 'application/json';
+                   requestBody = JSON.stringify(locationDataToSave);
+
+                   // Example using FormData (if sending the file directly)
+                   /*
+                   const formData = new FormData();
+                   formData.append('name', name);
+                   formData.append('latitude', latitude);
+                   formData.append('longitude', longitude);
+                   formData.append('type', type);
+                   formData.append('description', description);
+                   if (imageFile) {
+                       formData.append('image', imageFile); // 'image' matches the field name in your model/API expected data
+                   }
+                   // Append other non-file fields
+                   // formData.append('faculty', faculty); // Faculty/Floors are for BuildingDetails, not Location save
+                   // formData.append('floors', floors);
+
+                   requestBody = formData;
+                   // Do NOT manually set Content-Type header for FormData; the browser sets it correctly
+                   // headers = { 'Authorization': `Bearer ${jwtToken}` };
+                   */
+
+
+                   const response = await fetch('/api/markers', { // Your backend API route for creating Locations
+                       method: 'POST',
+                       headers: headers,
+                       body: requestBody // Send the data
+                   });
+
+
+                   // 3. Process the response
+                   const result = await response.json(); // Parse the JSON response
+
+                   if (response.ok) { // Check if the HTTP status code is 2xx (e.g., 201)
+                       console.log('Location creation successful:', result);
+                       M.toast({html: 'Marker created successfully!', classes: 'green lighten-3'});
+
+                       // 4. Update UI on success
+                       // Add the newly created location (result.marker) to the Google Map
+                        if (window.addMarkerToMap && result.marker) {
+                            const newMarker = window.addMarkerToMap(result.marker); // result.marker should be the Location object from API
+                            // Optional: Pan/zoom to the new marker
+                             if (window.map && newMarker) {
+                                 window.map.panTo(newMarker.getPosition());
+                                 window.map.setZoom(18); // Adjust zoom as needed
+                             }
+                        } else {
+                            console.warn("addMarkerToMap function or result.marker data not available. Cannot add marker to map visually.");
+                        }
+
+
+                       // Close the sidebar
+                       createMarkerSidebar.classList.remove('open');
+
+                       // Clear the form fields
+                       createMarkerForm.reset();
+                       // Reset Materialize labels/selects after reset
+                       M.FormSelect.init(createMarkerForm.querySelectorAll('select')); // Re-initialize selects
+                       M.updateTextFields(); // Update text field labels for inputs/textareas
+                       // Reset image preview area if applicable (needs your image upload JS)
+                        if (markerImageInput && markerImagePreviewDiv && document.getElementById('marker-upload-area')) {
+                             // Assuming you have a removeImage function or similar reset logic
+                             // Call your function to reset the image input and preview area
+                             // Example: window.removeImage(markerImageInput, document.getElementById('marker-preview'), markerImagePreviewDiv, document.getElementById('marker-upload-area'));
+                             // Just reset the input value directly if no complex preview reset is needed
+                             markerImageInput.value = '';
+                             markerImagePreviewDiv.style.display = 'none'; // Hide preview div
+                              document.getElementById('marker-upload-area').style.display = 'block'; // Show upload area
+                        }
+                       // Reset preview map area
+                       if (markerPreviewMapDiv) {
+                            markerPreviewMapDiv.innerHTML = "";
+                            markerPreviewMapDiv.style.display = 'none'; // Hide preview map div
+                       }
+
+
+                   } else { // Handle HTTP errors (e.g., 400, 401, 500)
+                       console.error('Location creation failed:', response.status, result);
+                       M.toast({html: `Error: ${result.msg || 'Failed to create marker'}`, classes: 'red lighten-2'});
+
+                        // Handle specific errors like authentication failure
+                        if (response.status === 401) {
+                             console.log("Authentication failed, redirecting to login.");
+                             setTimeout(() => { window.location.href = '/login'; }, 2000); // Redirect after a short delay
+                        }
+                   }
+
+               } catch (error) {
+                   console.error('Error submitting form or processing response:', error);
+                   M.toast({html: `An unexpected error occurred: ${error.message}`, classes: 'red lighten-2'});
+               }
+           }); // End form submit listener
+
+            console.log("Create Marker form submit listener attached.");
+
+       } else {
+           console.warn("Create Marker Form element #create-marker-form or sidebar not found. Form submission disabled.");
+       }
+       // --- End Create Marker Form Submission Implementation ---
+
+
+      // --- Implement the form submission for the Room form (#room-form) ---
+      // This will be similar to the marker form submission but sends data to a room-specific API endpoint.
+      // It will likely need to know the ID of the BuildingDetails or Location it belongs to.
+      const roomForm = document.getElementById('room-form');
+      // You'll need input references for room form fields here
+      // const roomNameInput = document.getElementById('room-name'); etc.
+      if (roomForm && roomSidebar /* && other room form elements */) {
+           // Add submit event listener here
+           /*
+           roomForm.addEventListener('submit', async (event) => {
+               event.preventDefault();
+               console.log("Room form submitted!");
+               // Collect room data
+               // Send fetch request to /api/locations/{location_id}/buildings/{building_id}/rooms or similar
+               // Handle response (e.g., add room to the list, show success, close sidebar)
+           });
+           */
+            console.log("Room form found. Attach submit listener.");
+      } else {
+           console.warn("Room form element #room-form or related elements not found. Room form submission disabled.");
+      }
+      // --- End Room Form Submission Implementation ---
+
+
+      // TODO: Implement logic for dynamically added room item edit/delete buttons if needed here
+      // using event delegation on #room-list-container (see previous script.js example)
+      const roomListContainer = document.getElementById('room-list-container');
+       if (roomListContainer) {
+           console.log("Room list container found. Add event delegation for edit/delete.");
+           /*
+           roomListContainer.addEventListener('click', function(event) {
+               // Check if the clicked element is an edit or delete button
+               if (event.target.classList.contains('edit-room')) {
+                   const roomItem = event.target.closest('.room-item');
+                   // Get room ID from data attribute or similar
+                   // Populate room sidebar form with room data and open it in edit mode
+               } else if (event.target.classList.contains('delete-room')) {
+                   const roomItem = event.target.closest('.room-item');
+                    // Get room ID
+                   // Confirm deletion
+                   // Send AJAX request to delete room
+                   // Remove the room item from the list on success
+               }
+           });
+           */
+       } else {
+           console.warn("Room list container #room-list-container not found.");
+       }
+
+
+      // --- Implement displaying marker info when clicking a marker on the map ---
+      // This function is called by the click listener added in addMarkerToMap
+      // It should display details of the clicked marker (Location)
+      function displayMarkerInfo(locationData) { // Renamed parameter
+          console.log("Displaying info for location:", locationData);
+          // You would typically open an InfoWindow or populate/open a separate info sidebar here
+          // Example: Using Materialize Modal or a custom div
+
+          if (!locationData || !window.map || !google || !google.maps) {
+              console.error("Cannot display marker info: missing data, map, or API.");
+              M.toast({html: 'Error displaying marker info.', classes: 'red'});
+              return;
+          }
+
+          // --- Create an InfoWindow ---
+          const infowindowContent = `
+              <h6>${locationData.name || 'Unnamed'}</h6>
+              <p>Type: ${locationData.type || 'N/A'}</p>
+              ${locationData.description ? `<p>${locationData.description}</p>` : ''}
+              ${locationData.image ? `<img src="${locationData.image}" style="max-width:150px; height:auto; margin-top:10px;">` : ''}
+              {# Add Edit/Delete buttons here if user is authenticated #}
+              {% if is_authenticated %}
+                  <p>
+                      <button class="btn-small blue edit-marker-btn" data-marker-id="${locationData.id}">Edit</button>
+                      <button class="btn-small red delete-marker-btn" data-marker-id="${locationData.id}">Delete</button>
+                  </p>
+              {% endif %}
+          `;
+
+           const infowindow = new google.maps.InfoWindow({
+              content: infowindowContent
+           });
+
+           // Find the marker object on the map by its ID (stored in marker.markerData.id)
+           const clickedMarker = mapMarkers.find(m => m.markerData && m.markerData.id === locationData.id);
+
+           if (clickedMarker) {
+               infowindow.open(window.map, clickedMarker);
+
+               // TODO: Add click listeners to the Edit/Delete buttons inside the info window
+               // These need to be added *after* the info window content is set and opened.
+               // You can use event delegation on the document or listen to the 'domready' event of the InfoWindow.
+               google.maps.event.addListener(infowindow, 'domready', () => {
+                   const editButton = infowindow.getContentElement().querySelector('.edit-marker-btn');
+                   const deleteButton = infowindow.getContentElement().querySelector('.delete-marker-btn');
+
+                   if (editButton) {
+                       editButton.addEventListener('click', () => {
+                           const markerId = editButton.getAttribute('data-marker-id');
+                           console.log(`Edit marker clicked for ID: ${markerId}`);
+                           // TODO: Implement edit logic - populate create marker sidebar in edit mode
+                           // and open it. You'll need to fetch the full marker data by ID first.
+                           M.toast({html: `Edit functionality not implemented yet for marker ID ${markerId}`, classes: 'blue'});
+                           // Close the info window
+                           infowindow.close();
+                       });
+                   }
+                   if (deleteButton) {
+                        deleteButton.addEventListener('click', () => {
+                           const markerId = deleteButton.getAttribute('data-marker-id');
+                           console.log(`Delete marker clicked for ID: ${markerId}`);
+                           // TODO: Implement delete logic - confirm deletion, send AJAX request
+                            M.toast({html: `Delete functionality not implemented yet for marker ID ${markerId}`, classes: 'red'});
+                            // Close the info window
+                            infowindow.close();
+                        });
+                   }
+               });
+
+
+           } else {
+               console.warn("Could not find marker object on map to open InfoWindow for ID:", locationData.id);
+                M.toast({html: 'Error finding marker on map.', classes: 'red'});
+           }
+           // --- End Create an InfoWindow ---
+
+
+           // TODO: Alternative/Addition: Populate/open a sidebar with more details/edit form
+           // You might have a dedicated 'view/edit marker' sidebar
+      }
+      // Make displayMarkerInfo globally accessible
+      window.displayMarkerInfo = displayMarkerInfo;
+
+
+      // Helper function to get a cookie value (Needed for JWT cookie)
+      function getCookie(name) {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(';').shift();
+          return null; // Return null if cookie not found
+      }
+      window.getCookie = getCookie; // Make globally accessible
+
+
+    } // End setupEventHandlers
+
+
+    // Optional: Use DOMContentLoaded if elements are sometimes not found when initMap calls setupEventHandlers
+    /*
+    let isDomReady = false;
+    document.addEventListener('DOMContentLoaded', function() {
+         isDomReady = true;
+         // Initialize Materialize components (if not already done in script.js)
+         M.FormSelect.init(document.querySelectorAll('select'));
+
+         // If setup has not been called by initMap yet, call it
+         // This handles cases where DOM might be ready before Google Maps API loads
+         // setupEventHandlers(); // Call here if you want listeners setup ASAP
+         // Note: Be careful if setupEventHandlers depends on the `map` variable being defined.
+         // If so, you might need to delay parts of setupEventHandlers until map is ready,
+         // or ensure initMap calls setupEventHandlers.
+
+         console.log("DOMContentLoaded fired.");
+    });
+    */
+
+
+    // Ensure your Google Maps API script tag has &callback=initMap
+    // <script src="https://maps.googleapis.com/maps/api/js?key={{ Maps_api_key }}&callback=initMap" async defer></script>
+
   </script>
   {% endblock %}
-  

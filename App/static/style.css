@@ -57,9 +57,9 @@ html {
 
 #toggle-button {
   position: absolute;
-  top: 70px;
-  left: 10px;
-  z-index: 1100;
+  top: 12vh;
+  left: 35vh;
+  z-index: 999;
   background-color: #2d3599 !important; 
   color: white !important; 
 }
@@ -197,8 +197,8 @@ nav {
 #create-marker-button {
   position: fixed;
   bottom: 20px;
-  right: 20px;
-  z-index: 1100;
+  right: 55px;
+  z-index: 999;
   background-color: #1a50b4 !important;
   color: white !important;
 }
@@ -351,6 +351,10 @@ nav {
 /* Required field indicator */
 .required-dot {
   display: none; 
+}
+
+#create-marker-sidebar select {
+  display: block !important; 
 }
 
 /* Description textarea */
